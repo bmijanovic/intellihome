@@ -13,9 +13,11 @@ import {environment} from "../../../../security/Environment.tsx";
 import {useParams} from "react-router-dom";
 import SignalRSmartDeviceService from "../../../../services/smartDevices/SignalRSmartDeviceService.ts";
 import SmartDevice from "../../../../models/interfaces/SmartDevice.ts";
+import {useQuery, useQueryClient} from "react-query";
 
 const SmartDeviceMain = () => {
     const params = useParams();
+    const queryClient = useQueryClient();
     const [isConnected, setIsConnected] = useState(false);
     const [selectedTab, setSelectedTab] = useState(0);
     const [deviceType, setDeviceType] = useState(params.type);
@@ -23,17 +25,27 @@ const SmartDeviceMain = () => {
     // @ts-ignore
     const [smartDevice, setSmartDevice] = useState<SmartDevice>({});
 
-    function getSmartDevice() {
-        axios.get(environment + `/api/${deviceType}/Get?Id=${smartDeviceId}`).then(res => {
-            setSmartDevice(res.data)
-            setIsConnected(res.data.isConnected)
-        }).catch(err => {
-            console.log(err)
-        });
+    const _ = useQuery({
+        queryKey: ['getSmartDevice'], queryFn: () => {
+            axios.get(environment + `/api/${deviceType}/Get?Id=${smartDeviceId}`).then(res => {
+                setSmartDevice(res.data)
+                setIsConnected(res.data.isConnected)
+                return res.data
+            }).catch(err => {
+                console.log(err)
+            });
+        }
+    });
+    const getSmartDevice = () => {
+        return smartDevice;
     }
+    useEffect(() => {
+        queryClient.invalidateQueries('getSmartDevice');
+    }, [selectedTab])
 
     const signalRSmartDeviceService = useMemo(() => new SignalRSmartDeviceService(), [smartDeviceId]);
-    function initSmartDeviceSocketConnection(){
+
+    function initSmartDeviceSocketConnection() {
         const subscriptionResultCallback = (result) => {
             result = JSON.parse(result);
             console.log('Subscription result:', result);
@@ -75,7 +87,7 @@ const SmartDeviceMain = () => {
                 console.log('SignalR connection stopped');
             });
         }
-    }, [smartDeviceId]);
+    }, []);
 
     return <>
         <Box display="flex" flexDirection="row" alignItems="center">
@@ -107,9 +119,9 @@ const SmartDeviceMain = () => {
         </Box>
         {selectedTab == 0 ? deviceType == "AmbientSensor" ? <AmbientSensorControl smartDeviceId={smartDeviceId}/> :
                 deviceType == "AirConditioner" ? <AirConditionerControl/> :
-                    deviceType == "Lamp" ? <LampControl device={smartDevice} setSmartDeviceParent={setSmartDevice}/> :
+                    deviceType == "Lamp" ? <LampControl device={smartDevice}/> :
                         deviceType == "SolarPanelSystem" ? <SolarPanelsControl solarPanelSystem={smartDevice}/> :
-                            deviceType == "VehicleGate" ? <GateControl device={smartDevice} setSmartDeviceParent={setSmartDevice}/> :
+                            deviceType == "VehicleGate" ? <GateControl device={smartDevice}/> :
                                 deviceType == "BatterySystem" ? <BatteryControl batterySystem={smartDevice}/> :
                                     <></>
 

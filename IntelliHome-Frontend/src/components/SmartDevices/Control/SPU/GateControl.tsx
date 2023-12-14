@@ -10,26 +10,24 @@ import {
 } from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {Add, Close, KeyboardArrowDown, KeyboardArrowUp} from "@mui/icons-material";
-import {LocalizationProvider, StaticDateTimePicker} from "@mui/x-date-pickers";
-import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, {Dayjs} from "dayjs";
-import InputAdornment from "@mui/material/InputAdornment";
+import dayjs from "dayjs";
 import axios from "axios";
 import {environment} from "../../../../security/Environment.tsx";
+import {v4 as uuidv4} from 'uuid';
+import {useQueryClient} from "react-query";
 
 
-const GateControl = ({device, setSmartDeviceParent}) => {
+const GateControl = ({device}) => {
+    const queryClient = useQueryClient()
     const [lastPlate, setLastPlate] = useState(device.currentLicencePlate)
     const [isOpenGate, setIsOpenGate] = useState(device.isOpen)
     const [isOpenGateByUser, setIsOpenGateByUser] = useState(device.isOpenByUser || false)
     const [isPublic, setIsPublic] = useState(device.isPublic)
     const [open, setIsOpen] = useState(false)
     type TDate = TDate | null;
-    const [value, setValue] = React.useState<TDate>(dayjs());
     const [history, setHistory] = useState([]);
     const [myPlates, setMyPlates] = useState(device.allowedLicencePlates ? device.allowedLicencePlates : []);
     const [newPlate, setNewPlate] = useState("")
-    // console.log(value)
     const DatePickerStyle = {
         "& .MuiPickersLayout-actionBar": {display: "none"},
         minHeight: "520px"
@@ -157,6 +155,7 @@ const GateControl = ({device, setSmartDeviceParent}) => {
     }));
 
     useEffect(() => {
+        console.log(device)
         axios.put(environment + `/api/VehicleGate/TurnOnSmartDevice?Id=${device.id}&TurnOn=${true}`).then(res => {
             console.log(res.data)
         }).catch(err => {
@@ -180,29 +179,19 @@ const GateControl = ({device, setSmartDeviceParent}) => {
         }).catch(err => {
             console.log(err)
         });
-    }, []);
+    }, [device.id]);
 
-    useEffect(() => {
-
-        device.isOpen = isOpenGate
-        device.isPublic = isPublic
-        device.allowedLicencePlates = myPlates
-        device.currentLicencePlate = lastPlate
-        device.licencePlate = lastPlate
-        device.isOpenByUser = isOpenGateByUser
-        setSmartDeviceParent(device)
-    }, [isOpenGate, isPublic, myPlates, lastPlate, isOpenGateByUser]);
 
 
     useEffect(() => {
         console.log("promenio parent")
-        console.log(device)
         setIsOpenGate(device.isOpen)
         setIsOpenGateByUser(device.isOpenByUser)
         setIsPublic(device.isPublic)
         setMyPlates(device.allowedLicencePlates)
         setLastPlate(device.licencePlate)
-        if(device.licencePlate !== undefined && device.licencePlate.length > 0 && device.isOpen == true)
+
+        if (device.licencePlate !== undefined && device.licencePlate.length > 0 && device.isOpen == true)
             history.push([device.licencePlate, device.isEntering])
         setHistory(history)
     }, [device]);
@@ -229,10 +218,11 @@ const GateControl = ({device, setSmartDeviceParent}) => {
     }
 
     const changeMode = (value) => {
-        if(isOpenGateByUser)
+        if (isOpenGateByUser)
             return
         axios.put(environment + `/api/VehicleGate/ChangeMode?Id=${device.id}&IsPublic=${value}`).then(res => {
             setIsPublic(value)
+            queryClient.invalidateQueries('getSmartDevice')
         }).catch(err => {
             console.log(err)
         });
@@ -243,6 +233,7 @@ const GateControl = ({device, setSmartDeviceParent}) => {
         axios.put(environment + `/api/VehicleGate/OpenCloseGate?Id=${device.id}&IsOpen=${value}`).then(res => {
             setIsOpenGate(value)
             setIsOpenGateByUser(value)
+            queryClient.invalidateQueries('getSmartDevice')
         }).catch(err => {
             console.log(err)
         });
@@ -256,10 +247,11 @@ const GateControl = ({device, setSmartDeviceParent}) => {
             aria-labelledby="modal-modal-title"
             aria-describedby="modal-modal-description"
         >
-            <Grid borderRadius="25px" container spacing={2} width="20%" minWidth="500px" bgcolor="white" padding={4} sx={{
-                position: "absolute", top: "50%", left: "50%",
-                transform: 'translate(-50%, -50%)'
-            }}>
+            <Grid borderRadius="25px" container spacing={2} width="20%" minWidth="500px" bgcolor="white" padding={4}
+                  sx={{
+                      position: "absolute", top: "50%", left: "50%",
+                      transform: 'translate(-50%, -50%)'
+                  }}>
                 <Grid item xs={12}>
                     <Typography id="modal-modal-title" variant="h6" component="h2">
                         Add New Plate
@@ -270,7 +262,8 @@ const GateControl = ({device, setSmartDeviceParent}) => {
                       flexDirection="column">
 
                     <TextField fullWidth type="text" name="myPlateModal"
-                               placeholder="Plate Number" sx={styledInput} onChange={(e) => setNewPlate(e.target.value)} mb={3}></TextField>
+                               placeholder="Plate Number" sx={styledInput} onChange={(e) => setNewPlate(e.target.value)}
+                               mb={3}></TextField>
 
                 </Grid>
                 <Grid item xs={12} display="flex" alignItems="flex-end" justifyContent="end">
@@ -280,7 +273,7 @@ const GateControl = ({device, setSmartDeviceParent}) => {
                             border: "1px solid #FBC40E",
                             color: "black",
                             borderRadius: "7px",
-                            marginRight:"20px",
+                            marginRight: "20px",
                             ':hover': {backgroundColor: "white"}
                         }}>Cancel</Button>
                         <Button mx={2} onClick={addNewLicencePlate} sx={{
@@ -329,12 +322,13 @@ const GateControl = ({device, setSmartDeviceParent}) => {
 
                 </Box>
                 <Box display="flex" width="100%" flexDirection="column" overflow="auto">
-                    {[...history].reverse().map((item) => <Box>
+                    {[...history].reverse().map((item) => <Box key={uuidv4()}>
                         <Box width="98%" margin="0 auto" height={"2px"} bgcolor="rgba(0, 0, 0, 0.20)"/>
                         <Box width={"100%"} my={1.5} display="flex" alignItems="center" flexDirection={"row"}>
                             <Box display="flex" width="100%" justifyContent="space-between">
                                 <Typography ml={2} fontSize="20px" fontWeight="500"> {item[0]}</Typography>
-                                <Typography mr={2} fontSize="20px" fontWeight="500"> {item[1]? "In" : "Out"}</Typography>
+                                <Typography mr={2} fontSize="20px"
+                                            fontWeight="500"> {item[1] ? "In" : "Out"}</Typography>
 
                             </Box>
                         </Box>
@@ -357,7 +351,7 @@ const GateControl = ({device, setSmartDeviceParent}) => {
                                 }}><Add/></IconButton>
                 </Box>
                 <Box display="flex" width="100%" flexDirection="column" overflow="auto">
-                    {myPlates ? myPlates.map((item) => <Box>
+                    {myPlates ? myPlates.map((item) => <Box key={uuidv4()}>
                         <Box width="98%" margin="0 auto" height={"2px"} bgcolor="rgba(0, 0, 0, 0.20)"/>
                         <Box width={"100%"} my={1} display="flex" alignItems="center" flexDirection={"row"}>
                             <Box display="flex" width="100%" justifyContent="space-between">

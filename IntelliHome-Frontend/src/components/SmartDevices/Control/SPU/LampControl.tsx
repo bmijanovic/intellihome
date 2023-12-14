@@ -16,9 +16,11 @@ import {environment} from "../../../../security/Environment.tsx";
 import {areDatesEqual} from "@mui/x-date-pickers/internals";
 import SignalRSmartHomeService from "../../../../services/smartDevices/SignalRSmartHomeService.ts";
 import SignalRSmartDeviceService from "../../../../services/smartDevices/SignalRSmartDeviceService.ts";
+import {useQueryClient} from "react-query";
 
-const LampControl = ({device, setSmartDeviceParent}) => {
+const LampControl = ({device}) => {
     console.log(device)
+    const queryClient=useQueryClient()
     const [brightness, setBrightness]=useState(device.currentBrightness)
     const [threshold, setThreshold]= useState(device.brightnessLimit)
     const [isOn, setIsOn]=useState(device.isOn)
@@ -80,7 +82,6 @@ const LampControl = ({device, setSmartDeviceParent}) => {
     }));
     const SwitchAuto = styled((props: SwitchProps) => (
         <Switch focusVisibleClassName=".Mui-focusVisible" checked={isAuto} onChange={(e) => {
-            setIsAuto(e.target.checked)
             setAutoMode(e.target.checked);
         }} size="large" disableRipple {...props} />
     ))(({theme}) => ({
@@ -133,16 +134,6 @@ const LampControl = ({device, setSmartDeviceParent}) => {
     }));
 
     useEffect(() => {
-
-        device.isOn = isOn;
-        device.isAuto = isAuto;
-        device.brightnessLimit = threshold;
-        device.currentBrightness = brightness;
-        setSmartDeviceParent(device);
-
-    }, [isOn, isAuto, threshold, brightness]);
-
-    useEffect(() => {
         setBrightness(device.currentBrightness);
         setThreshold(device.brightnessLimit);
         setIsOn(device.isOn);
@@ -157,6 +148,7 @@ const LampControl = ({device, setSmartDeviceParent}) => {
         console.log(isOn);
         axios.put(environment + `/api/Lamp/TurnOnSmartDevice?Id=${device.id}&TurnOn=${isOn}`).then(res => {
             console.log(res.data)
+            queryClient.invalidateQueries('getSmartDevice')
         }).catch(err => {
             console.log(err)
         });
@@ -167,6 +159,8 @@ const LampControl = ({device, setSmartDeviceParent}) => {
         console.log(isAuto);
         axios.put(environment + `/api/Lamp/ChangeMode?Id=${device.id}&IsAuto=${isAuto}`).then(res => {
             console.log(res.data)
+            queryClient.invalidateQueries('getSmartDevice')
+            setIsAuto(isAuto)
         }).catch(err => {
             console.log(err)
         });
@@ -177,6 +171,7 @@ const LampControl = ({device, setSmartDeviceParent}) => {
         setThreshold(threshold)
         axios.put(environment + `/api/Lamp/ChangeBrightnessLimit?Id=${device.id}&Brightness=${threshold}`).then(res => {
             console.log(res.data)
+            queryClient.invalidateQueries('getSmartDevice')
         }).catch(err => {
             console.log(err)
         });
