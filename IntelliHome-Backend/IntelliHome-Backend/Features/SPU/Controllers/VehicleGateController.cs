@@ -8,7 +8,7 @@ namespace IntelliHome_Backend.Features.SPU.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class VehicleGateController : ControllerBase
+    public class  VehicleGateController : ControllerBase
     {
         private readonly IVehicleGateService _vehicleGateService;
 
@@ -45,6 +45,7 @@ namespace IntelliHome_Backend.Features.SPU.Controllers
             return Ok();
         }
 
+        
         [HttpPut]
         public async Task<ActionResult> AddLicencePlate(Guid id, string licencePlate)
         {

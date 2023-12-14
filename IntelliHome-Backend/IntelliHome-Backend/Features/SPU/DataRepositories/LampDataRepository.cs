@@ -54,13 +54,19 @@ namespace IntelliHome_Backend.Features.SPU.DataRepositories
             timestamp = TimeZoneInfo.ConvertTime(timestamp, localTimeZone);
 
             var currentBrightnessRecord = rows.FirstOrDefault(r => r.Row.Contains("currentBrightness"));
+            var isWorkingRecord = rows.FirstOrDefault(r => r.Row.Contains("isWorking"));
+            var isAutoRecord = rows.FirstOrDefault(r => r.Row.Contains("isAuto"));
 
             double currentBrightness = currentBrightnessRecord != null ? Convert.ToDouble(currentBrightnessRecord.GetValueByKey("_value")) : 0.0;
+            bool isWorking = isWorkingRecord != null && Convert.ToDouble(isWorkingRecord.GetValueByKey("_value")) == 1.0;
+            bool isAuto = isAutoRecord != null && Convert.ToDouble(isAutoRecord.GetValueByKey("_value")) == 1.0;
 
             return new LampData
             {
                 Timestamp = timestamp,
                 CurrentBrightness = currentBrightness,
+                IsWorking = isWorking,
+                IsAuto = isAuto,
             };
         }
     }

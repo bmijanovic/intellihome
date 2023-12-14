@@ -50,5 +50,12 @@ namespace IntelliHome_Backend.Features.SPU.Controllers
             await _lampService.TurnOnSmartDevice(id, turnOn);
             return Ok();
         }
+
+        [HttpPut]
+        public async Task<ActionResult> TurnLampOn(Guid id, Boolean isOn)
+        {
+            await _lampService.TurnLampOn(id, isOn);
+            return Ok();
+        }
     }
 }

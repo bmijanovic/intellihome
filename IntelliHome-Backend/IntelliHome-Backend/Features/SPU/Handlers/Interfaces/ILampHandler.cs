@@ -8,5 +8,6 @@ namespace IntelliHome_Backend.Features.SPU.Handlers.Interfaces
         void ChangeMode(Lamp lamp, bool isAuto);
         void ChangeBrightnessLimit(Lamp lamp, double brightness);
 
+        void TurnLampOn(Lamp lamp, Boolean isOn);
     }
 }

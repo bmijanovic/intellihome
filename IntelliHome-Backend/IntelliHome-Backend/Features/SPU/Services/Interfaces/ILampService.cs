@@ -13,5 +13,6 @@ namespace IntelliHome_Backend.Features.SPU.Services.Interfaces
         Task ChangeMode(Guid id, bool isAuto);
         Task ChangeBrightnessLimit(Guid id, double brightness);
         Task TurnOnSmartDevice(Guid id, bool turnOn);
+        Task TurnLampOn(Guid id, Boolean isOn);
     }
 }

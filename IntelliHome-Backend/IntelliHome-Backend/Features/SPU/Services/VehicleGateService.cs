@@ -44,7 +44,7 @@ namespace IntelliHome_Backend.Features.SPU.Services
         public async Task<VehicleGateDTO> GetWithData(Guid id)
         {
             VehicleGate vehicleGate = await _vehicleGateRepository.Read(id);
-            VehicleGateDTO vehicleGateDTO = new VehicleGateDTO
+            VehicleGateDTO vehicleGateDTO = new()
             {
                 Id = vehicleGate.Id,
                 Name = vehicleGate.Name,
@@ -67,12 +67,13 @@ namespace IntelliHome_Backend.Features.SPU.Services
                 vehicleGateData = null;
             }
 
-            if (vehicleGateData != null)
-            {
-                vehicleGateDTO.CurrentLicencePlate = vehicleGateData.LicencePlate;
-                vehicleGateDTO.IsEntering = vehicleGateData.IsEntering;
-                vehicleGateDTO.IsOpen = vehicleGateData.IsOpen;
-            }
+            if (vehicleGateData == null) return vehicleGateDTO;
+
+            vehicleGateDTO.CurrentLicencePlate = vehicleGateData.LicencePlate;
+            vehicleGateDTO.IsEntering = vehicleGateData.IsEntering;
+            vehicleGateDTO.IsOpen = vehicleGateData.IsOpen;
+            vehicleGateDTO.IsOpenByUser = vehicleGateData.IsOpenByUser;
+            vehicleGateDTO.ActionBy = vehicleGateData.ActionBy;
 
             return vehicleGateDTO;
         }

@@ -42,7 +42,7 @@ namespace IntelliHome_Backend.Features.SPU.Services
         public async Task<LampDTO> GetWithData(Guid id)
         {
             Lamp lamp = await _lampRepository.Read(id);
-            LampDTO lampDTO = new LampDTO
+            LampDTO lampDTO = new()
             {
                 Id = lamp.Id,
                 Name = lamp.Name,
@@ -54,7 +54,7 @@ namespace IntelliHome_Backend.Features.SPU.Services
                 BrightnessLimit = lamp.BrightnessLimit,
             };
 
-            LampData lampData = null;
+            LampData lampData;
             try
             {
                 lampData = GetLastData(id);
@@ -65,11 +65,10 @@ namespace IntelliHome_Backend.Features.SPU.Services
             }
 
 
-            if (lampData != null)
-            {
-                lampDTO.CurrentBrightness = lampData.CurrentBrightness;
-                lampDTO.IsWorking = lampData.IsWorking;
-            }
+            if (lampData == null) return lampDTO;
+            lampDTO.CurrentBrightness = lampData.CurrentBrightness;
+            lampDTO.IsAuto = lampData.IsAuto;
+            lampDTO.IsWorking = lampData.IsWorking;
 
             return lampDTO;
         }
@@ -110,8 +109,14 @@ namespace IntelliHome_Backend.Features.SPU.Services
             Lamp lamp = await _lampRepository.FindWithSmartHome(id);
             await _lampHandler.ToggleSmartDevice(lamp, turnOn);
 
-            lamp.IsOn = turnOn;
+            lamp.IsOn = true;
             await _lampRepository.Update(lamp);
+        }
+
+        public async Task TurnLampOn(Guid id, Boolean isOn)
+        {
+            Lamp lamp = await _lampRepository.FindWithSmartHome(id);
+            _lampHandler.TurnLampOn(lamp, isOn);
         }
 
 
@@ -133,6 +138,7 @@ namespace IntelliHome_Backend.Features.SPU.Services
         public async Task<Lamp> Update(Lamp entity)
         {
             return await _lampRepository.Update(entity);
+
         }
     }
 }

@@ -67,6 +67,7 @@ class VehicleGate(SmartDevice):
                                                          "isPublic": self.is_public,
                                                          "isOpen": self.is_open,
                                                          "isEntering": is_entering,
+                                                         "isOpenByUser": self.is_opened_by_user,
                                                          "actionBy": self.user,
                                                          "consumptionPerMinute": round(self.power_per_hour / 60, 4)}),
                             retain=False)
@@ -75,6 +76,7 @@ class VehicleGate(SmartDevice):
         while True:
             if not self.is_on:
                 break
+            await asyncio.sleep(10)
 
             print("Allowed licence plates: {}".format(self.allowed_licence_plates))
             print("Licence plates in home: {}".format(self.licence_plates_in_home))
@@ -144,4 +146,3 @@ class VehicleGate(SmartDevice):
                     else:
                         print("Car with licence plate {} is not allowed to enter home".format(licence_plate))
 
-            await asyncio.sleep(10)

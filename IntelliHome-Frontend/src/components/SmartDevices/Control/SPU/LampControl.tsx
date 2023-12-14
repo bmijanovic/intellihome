@@ -27,9 +27,7 @@ const LampControl = ({device}) => {
     const [isAuto, setIsAuto]=useState(device.isAuto)
     const [isWorking, setIsWorking]=useState(device.isWorking)
     const SwitchPower = styled((props: SwitchProps) => (
-        <Switch focusVisibleClassName=".Mui-focusVisible" checked={isOn} onChange={(e) => {
-            setIsOn(e.target.checked);
-            setIsWorking(e.target.checked);
+        <Switch focusVisibleClassName=".Mui-focusVisible" checked={isWorking} onChange={(e) => {
             turnOnDevice(e.target.checked);
         }} size="large" disableRipple {...props} />
     ))(({theme}) => ({
@@ -134,6 +132,14 @@ const LampControl = ({device}) => {
     }));
 
     useEffect(() => {
+        axios.put(environment + `/api/Lamp/TurnOnSmartDevice?Id=${device.id}&TurnOn=${true}`).then(res => {
+            console.log(res.data)
+        }).catch(err => {
+            console.log(err)
+        });
+    }, []);
+
+    useEffect(() => {
         setBrightness(device.currentBrightness);
         setThreshold(device.brightnessLimit);
         setIsOn(device.isOn);
@@ -146,8 +152,9 @@ const LampControl = ({device}) => {
 
     function turnOnDevice(isOn){
         console.log(isOn);
-        axios.put(environment + `/api/Lamp/TurnOnSmartDevice?Id=${device.id}&TurnOn=${isOn}`).then(res => {
+        axios.put(environment + `/api/Lamp/TurnLampOn?Id=${device.id}&TurnOn=${isOn}`).then(res => {
             console.log(res.data)
+            setIsWorking(isOn);
             queryClient.invalidateQueries('getSmartDevice')
         }).catch(err => {
             console.log(err)
@@ -155,7 +162,6 @@ const LampControl = ({device}) => {
     }
 
     function setAutoMode(isAuto) {
-        if (!isOn) return;
         console.log(isAuto);
         axios.put(environment + `/api/Lamp/ChangeMode?Id=${device.id}&IsAuto=${isAuto}`).then(res => {
             console.log(res.data)
@@ -216,13 +222,13 @@ const LampControl = ({device}) => {
                 <Typography fontSize="50px" fontWeight="700" display="flex" alignItems="flex-end"> {brightness}<Typography mb={2} fontSize="20px" >nit</Typography></Typography>
 
             </Box>
-            <Box gridColumn={1} height="350px" gridRow={3} display="flex" flexDirection="column"
-                 alignItems="center" bgcolor="white" borderRadius="25px">
-                <Typography fontSize="30px" mt={1} fontWeight="600">IS GLOWING </Typography>
-                <Typography fontSize="80px" color="#343F71" mt={8}
-                            fontWeight="600"> {isWorking ? "ON" : "OFF"}</Typography>
+            {/*<Box gridColumn={1} height="350px" gridRow={3} display="flex" flexDirection="column"*/}
+            {/*     alignItems="center" bgcolor="white" borderRadius="25px">*/}
+            {/*    <Typography fontSize="30px" mt={1} fontWeight="600">IS GLOWING </Typography>*/}
+            {/*    <Typography fontSize="80px" color="#343F71" mt={8}*/}
+            {/*                fontWeight="600"> {isWorking ? "ON" : "OFF"}</Typography>*/}
 
-            </Box>
+            {/*</Box>*/}
         </Box>
     </>
 }

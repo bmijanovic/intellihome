@@ -42,11 +42,13 @@ namespace IntelliHome_Backend.Features.SPU.Handlers
                         { "isPublic", vehicleGateData.IsPublic ? 1f : 0f },
                         { "isOpen", vehicleGateData.IsOpen ? 1f : 0f },
                         { "isEntering", vehicleGateData.IsEntering ? 1f : 0f },
+                        { "isOpenByUser", vehicleGateData.IsOpenByUser ? 1f : 0f},
                         { "consumptionPerMinute", vehicleGateData.ConsumptionPerMinute }
 
                 };
                 var vehicleGateDataTags = new Dictionary<string, string>
                 {
+                        { "actionBy", vehicleGateData.ActionBy},
                         { "licencePlate", vehicleGateData.LicencePlate },
                         { "deviceId", vehicleGate.Id.ToString() }
                 };
