@@ -22,19 +22,23 @@ const SmartDeviceMain = () => {
     const [selectedTab, setSelectedTab] = useState(0);
     const [deviceType, setDeviceType] = useState(params.type);
     const [smartDeviceId, setSmartDeviceId] = useState(params.id);
+    const [isRan, setIsRan] = useState(false);
     // @ts-ignore
     const [smartDevice, setSmartDevice] = useState<SmartDevice>({});
 
-    const _ = useQuery({
+
+    useQuery({
         queryKey: ['getSmartDevice'], queryFn: () => {
             axios.get(environment + `/api/${deviceType}/Get?Id=${smartDeviceId}`).then(res => {
-                setSmartDevice(res.data)
-                setIsConnected(res.data.isConnected)
-                return res.data
+                if (!isRan) {
+                    setSmartDevice(res.data)
+                    setIsConnected(res.data.isConnected)
+                }
             }).catch(err => {
                 console.log(err)
             });
-        }
+        },
+        refetchOnWindowFocus: false
     });
     const getSmartDevice = () => {
         return smartDevice;
@@ -42,6 +46,9 @@ const SmartDeviceMain = () => {
     useEffect(() => {
         queryClient.invalidateQueries('getSmartDevice');
     }, [selectedTab])
+    useEffect(()=>{
+        console.log("AAAAAAAASDASDAS")
+    },[])
 
     const signalRSmartDeviceService = useMemo(() => new SignalRSmartDeviceService(), [smartDeviceId]);
 

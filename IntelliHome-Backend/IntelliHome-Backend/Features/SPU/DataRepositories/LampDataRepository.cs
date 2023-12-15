@@ -23,6 +23,8 @@ namespace IntelliHome_Backend.Features.SPU.DataRepositories
             {
                 return new LampData
                 {
+                    IsAuto = false,
+                    IsWorking = false,
                     CurrentBrightness = 0.0,
                 };
             }
@@ -30,6 +32,8 @@ namespace IntelliHome_Backend.Features.SPU.DataRepositories
 
             return new LampData
             {
+                IsAuto = lampData.IsAuto,
+                IsWorking = lampData.IsWorking,
                 CurrentBrightness = lampData.CurrentBrightness,
             };
         }
